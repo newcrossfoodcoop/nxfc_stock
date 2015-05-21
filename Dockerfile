@@ -1,4 +1,4 @@
-FROM node:0.12
+FROM node:0.12-slim
 
 MAINTAINER Ben Simpson, ben@newcrossfoodcoop.org.uk
 
