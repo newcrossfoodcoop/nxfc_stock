@@ -1,4 +1,4 @@
-FROM dockerfile/nodejs
+FROM node:0.12
 
 MAINTAINER Ben Simpson, ben@newcrossfoodcoop.org.uk
 
@@ -12,11 +12,9 @@ RUN apt-get update \
 # Install Mean.JS Prerequisites
 RUN npm install -g gulp
 RUN npm install -g bower
-RUN npm install -g karma
-RUN npm install -g phantomjs
 
 # Install Mean.JS packages
-RUN wget https://raw.githubusercontent.com/newcrossfoodcoop/nxfc/nxfc_base_v3/package.json
+RUN wget https://raw.githubusercontent.com/newcrossfoodcoop/nxfc/nxfc_base_v2/package.json
 RUN npm install
 
 # Manually trigger bower. Why doesnt this work via npm install?
