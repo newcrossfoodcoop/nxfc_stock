@@ -6,7 +6,7 @@ WORKDIR /home/app
 
 # Install fonts for PhantomJS
 RUN apt-get update \
-    && apt-get install -y libfontconfig libfreetype6 bzip2 wget git gcc make build-essential\
+    && apt-get install -y libfontconfig libfreetype6 bzip2 wget git\
     && rm -rf /var/lib/apt/lists/*
 
 # Install Mean.JS Prerequisites
