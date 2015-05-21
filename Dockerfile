@@ -18,6 +18,6 @@ RUN wget https://raw.githubusercontent.com/newcrossfoodcoop/nxfc/nxfc_base_v2/pa
 RUN npm install
 
 # Manually trigger bower. Why doesnt this work via npm install?
-RUN wget https://raw.githubusercontent.com/newcrossfoodcoop/nxfc/nxfc_base_v3/.bowerrc
-RUN wget https://raw.githubusercontent.com/newcrossfoodcoop/nxfc/nxfc_base_v3/bower.json
+RUN wget https://raw.githubusercontent.com/newcrossfoodcoop/nxfc/nxfc_base_v2/.bowerrc
+RUN wget https://raw.githubusercontent.com/newcrossfoodcoop/nxfc/nxfc_base_v2/bower.json
 RUN bower install --config.interactive=false --allow-root
