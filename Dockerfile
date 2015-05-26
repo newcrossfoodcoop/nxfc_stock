@@ -15,7 +15,7 @@ RUN npm install -g bower
 RUN npm install -g karma
 RUN npm install -g phantomjs
 
-ENV NXFC_BASE_VERSION=v3
+ENV NXFC_BASE_VERSION=v4
 
 # Install Mean.JS packages
 RUN wget https://raw.githubusercontent.com/newcrossfoodcoop/nxfc/nxfc_base_${NXFC_BASE_VERSION}/package.json
