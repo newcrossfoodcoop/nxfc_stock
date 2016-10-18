@@ -1,11 +1,12 @@
 # nxfc_base
 
-This is the base container for the nxfc project.
+This is the base container for the nxfc project using alpine-node 
+(mhart/alpine-node).
 
-The Dockerfile grabs the ```package.json``` and ```bower.json``` from the main project using ```wget``` against a tag (usually ```nxfc_base_vN```).
+The intention is to also provide a cloneable base application to be able to 
+quickly build new services that conform to our configuration approach.
 
-This repository needs to also be tagged in the format ```vN``` and a corresponding tag setup in docker.hub for automated building.
-
-The ```latest``` docker.hub tag follows ```master```.
+From a versioning point of view, the major and minor versions come from 
+alpine-node and the patch version will come from here.
 
 
