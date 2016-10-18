@@ -4,7 +4,6 @@ MAINTAINER Ben Simpson, ben@newcrossfoodcoop.org.uk
 
 RUN apk update
 RUN apk add git
-RUN rm -r /var/cache/apk
 
 WORKDIR /home/app
 
