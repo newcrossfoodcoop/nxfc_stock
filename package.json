@@ -1,6 +1,6 @@
 {
   "name": "nxfc_base",
-  "version": "4.5.2",
+  "version": "4.6.0",
   "description": "Base container & service structure for the nxfc project.",
   "private": false,
   "main": "server.js",
