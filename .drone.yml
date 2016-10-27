@@ -5,7 +5,7 @@ cache:
 
 build:
   main:
-    image: mhart/alpine-node:4.5
+    image: mhart/alpine-node:4.6
     commands:
       - npm install
       - node_modules/.bin/gulp test
