@@ -1,23 +1,23 @@
 {
-  "name": "nxfc_base",
-  "version": "4.6.0",
-  "description": "Base container & service structure for the nxfc project.",
+  "name": "nxfc_stock",
+  "version": "0.0.0",
+  "description": "NXFC Stock Management Services",
   "private": false,
   "main": "server.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/newcrossfoodcoop/nxfc_base.git"
+    "url": "https://github.com/newcrossfoodcoop/nxfc_stock.git"
   },
-  "author": "https://github.com/newcrossfoodcoop/nxfc_base/graphs/contributors",
+  "author": "https://github.com/newcrossfoodcoop/nxfc_stock/graphs/contributors",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/newcrossfoodcoop/nxfc_base/issues"
+    "url": "https://github.com/newcrossfoodcoop/nxfc_stock/issues"
   },
   "scripts": {
     "start": "gulp",
     "test": "gulp test"
   },
-  "homepage": "https://github.com/newcrossfoodcoop/nxfc_base",
+  "homepage": "https://github.com/newcrossfoodcoop/nxfc_stock",
   "dependencies": {
     "async": "^2.0.1",
     "body-parser": "^1.15.2",
