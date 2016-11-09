@@ -1,0 +1,20 @@
+FROM mhart/alpine-node:4.6
+
+MAINTAINER Ben Simpson, ben@newcrossfoodcoop.org.uk
+
+# This definition relies on any build steps having already been run locally.
+# Normally this would be done as part of a drone publish step for docker inside
+# an alpine node container that has sucessfully passed its tests
+
+WORKDIR /home/app
+
+ADD package.json /home/app/package.json
+ADD node_modules /home/app/node_modules
+ADD lib /home/app/lib
+ADD depends /home/app/depends
+ADD provides /home/app/provides
+ADD config /home/app/config
+
+RUN npm prune --production
+
+CMD ["node provides/express"]
