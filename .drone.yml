@@ -25,6 +25,46 @@ publish:
     email: $$DOCKER_EMAIL
     password: $$DOCKER_PASSWORD
     repo: newcrossfoodcoop/nxfc_base
+    tag: latest-prod
+    file: Dockerfile.prod
+    when:
+      branch: master
+
+  docker:
+    username: bsimpson53
+    email: $$DOCKER_EMAIL
+    password: $$DOCKER_PASSWORD
+    repo: newcrossfoodcoop/nxfc_base
+    tag: latest-drone
+    file: Dockerfile.drone
+    when:
+      branch: master
+      
+  docker:
+    username: bsimpson53
+    email: $$DOCKER_EMAIL
+    password: $$DOCKER_PASSWORD
+    repo: newcrossfoodcoop/nxfc_base
     tag: $$TAG
+    when:
+      event: tag
+
+  docker:
+    username: bsimpson53
+    email: $$DOCKER_EMAIL
+    password: $$DOCKER_PASSWORD
+    repo: newcrossfoodcoop/nxfc_base
+    tag: $$TAG-prod
+    file: Dockerfile.prod
+    when:
+      event: tag
+      
+  docker:
+    username: bsimpson53
+    email: $$DOCKER_EMAIL
+    password: $$DOCKER_PASSWORD
+    repo: newcrossfoodcoop/nxfc_base
+    tag: $$TAG-drone
+    file: Dockerfile.drone
     when:
       event: tag

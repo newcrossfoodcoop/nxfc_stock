@@ -1,0 +1,56 @@
+#%RAML 0.8
+
+title: Base
+baseUri: http://localhost:8080/api
+
+schemas:
+  - Base: !include schema/base.json
+
+resourceTypes:
+  - base:
+      get?:
+        responses: &standardResponses
+          200:
+            description: OK
+      delete?:
+        responses: *standardResponses
+  - collection:
+      type: base
+      get:
+  - typedCollection:
+      type: collection
+      get:
+        responses:
+          200:
+            body:
+              application/json:
+                schema: <<collectionSchema>>
+  - typedMemberCollection:
+      type: collection
+      get:
+        description: List <<schema>>
+        responses:
+          200:
+            body:
+              application/json:
+                schema: |
+                  {
+                    "$schema": "http://json-schema.org/draft-03/schema#", 
+                    "type": "array", 
+                    "properties": { "$ref": "<<schema>>" } 
+                  }
+  - member:
+      type: base
+      get:
+      delete:
+  - typedMember:
+      type: member
+      get:
+        description: Read <<schema>>
+        responses:
+          200:
+            body:
+              application/json:
+                schema: <<schema>>
+      delete:
+        description: Delete <<schema>>
