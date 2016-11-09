@@ -11,12 +11,27 @@ module.exports = {
         throw new Error(chalk.red('NODE_ENV value not recognised!'));
     }),
 	repo: {
-		title: 'NXFC Base',
-		description: 'NXFC Base configuration',
+		title: 'NXFC Stock',
+		description: 'NXFC Stock Services',
 		pkgjson: pkgjson
 	},
     depends: {
+        mongoose: {
+            name: 'nxfc-stock',
+            models: 'depends/mongoose/models/*.js'
+        }
     },
     provides: {
+        express: {
+            port: 3040,
+            externalUrl: {
+                href: 'http://localhost:3000'
+            },
+            env: {
+                externalUrl: {
+                    href: 'EXTERNAL_HREF'
+                }
+            }
+        }
     }
 };

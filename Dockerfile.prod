@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:4.6
+FROM newcrossfoodcoop/nxfc_base:latest-prod
 
 MAINTAINER Ben Simpson, ben@newcrossfoodcoop.org.uk
 

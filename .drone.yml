@@ -5,27 +5,23 @@ cache:
 
 build:
   main:
-    image: mhart/alpine-node:4.6
+    image: newcrossfoodcoop/nxfc_base:latest-drone
     commands:
       - npm install
-      - node_modules/.bin/gulp test
+      - gulp build
+      - gulp test
+      - gulp test:express &
+      - sleep 10s
+      - NODE_ENV=test abao provides/express/raml/api.raml --server http://localhost:3041/api --hookfiles=provides/express/raml/hooks/*.js
     
 publish:
+      
   docker:
     username: bsimpson53
     email: $$DOCKER_EMAIL
     password: $$DOCKER_PASSWORD
-    repo: newcrossfoodcoop/nxfc_base
+    repo: newcrossfoodcoop/nxfc_stock
     tag: latest
-    when:
-      branch: master
-      
-  docker:
-    username: bsimpson53
-    email: $$DOCKER_EMAIL
-    password: $$DOCKER_PASSWORD
-    repo: newcrossfoodcoop/nxfc_base
-    tag: latest-prod
     file: Dockerfile.prod
     when:
       branch: master
@@ -34,37 +30,8 @@ publish:
     username: bsimpson53
     email: $$DOCKER_EMAIL
     password: $$DOCKER_PASSWORD
-    repo: newcrossfoodcoop/nxfc_base
-    tag: latest-drone
-    file: Dockerfile.drone
-    when:
-      branch: master
-      
-  docker:
-    username: bsimpson53
-    email: $$DOCKER_EMAIL
-    password: $$DOCKER_PASSWORD
-    repo: newcrossfoodcoop/nxfc_base
+    repo: newcrossfoodcoop/nxfc_stock
     tag: $$TAG
-    when:
-      event: tag
-
-  docker:
-    username: bsimpson53
-    email: $$DOCKER_EMAIL
-    password: $$DOCKER_PASSWORD
-    repo: newcrossfoodcoop/nxfc_base
-    tag: $$TAG-prod
     file: Dockerfile.prod
-    when:
-      event: tag
-      
-  docker:
-    username: bsimpson53
-    email: $$DOCKER_EMAIL
-    password: $$DOCKER_PASSWORD
-    repo: newcrossfoodcoop/nxfc_base
-    tag: $$TAG-drone
-    file: Dockerfile.drone
     when:
       event: tag

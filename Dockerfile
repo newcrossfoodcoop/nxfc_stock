@@ -1,12 +1,8 @@
-FROM mhart/alpine-node:4.6
+FROM newcrossfoodcoop/nxfc_base:latest
 
 MAINTAINER Ben Simpson, ben@newcrossfoodcoop.org.uk
 
 # This definition is primarily used for local docker and docker-compose builds
-
-RUN apk update
-RUN apk add git
-RUN npm install -g gulp abao
 
 WORKDIR /home/app
 
