@@ -4,13 +4,15 @@ var path = require('path');
 var config = require('config');
 
 var express = require('./lib');
-    
-var app = express.init();
+var mongoose = require(path.resolve('depends/mongoose'));
 
-// Start the app by listening on <port>
-var port = config.provides.express.port;
-app.listen(port);
+mongoose.connect(function (err, db) {   
+    var app = express.init();
 
-// Logging initialization
-console.log('Express started on port ' + port);
+    // Start the app by listening on <port>
+    var port = config.provides.express.port;
+    app.listen(port);
 
+    // Logging initialization
+    console.log('Express started on port ' + port);
+});
