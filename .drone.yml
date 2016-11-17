@@ -13,7 +13,11 @@ build:
       - gulp test:express &
       - sleep 10s
       - NODE_ENV=test abao provides/express/raml/api.raml --server http://localhost:3041/api --hookfiles=provides/express/raml/hooks/*.js
-    
+
+compose:
+  mongo:
+    image: mongo:3
+
 publish:
       
   docker:
