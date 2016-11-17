@@ -71,7 +71,7 @@ gulp.task('nodemon', function () {
 	return plugins.nodemon({
 		script: 'provides/express',
 		nodeArgs: pickArgs(['debug']),
-		ext: 'js,html,json',
+		ext: 'js html json',
 		watch: ['provides','depends','config','package.json','lib']
 	});
 });
