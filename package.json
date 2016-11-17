@@ -28,6 +28,7 @@
     "glob": "^7.0.6",
     "lodash": "^4.16.4",
     "method-override": "^2.3.6",
+    "mongoose": "^4.6.7",
     "morgan": "^1.7.0"
   },
   "devDependencies": {
@@ -43,6 +44,8 @@
     "gulp-raml2html": "^0.2.0",
     "jshint": "^2.9.3",
     "raml-parser": "^0.8.18",
+    "randomstring": "^1.1.5",
+    "request": "^2.78.0",
     "run-sequence": "^1.2.2"
   }
 }
