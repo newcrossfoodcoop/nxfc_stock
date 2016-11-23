@@ -6,6 +6,7 @@
         "description": { "type": "string" },
         "state": { "type": "string" },
         "start": { "type": "string", "format": "rfc3339" },
-        "end": { "type": "string", "format": "rfc3339" }
+        "end": { "type": "string", "format": "rfc3339" },
+        "location": { "type": "string", "required": true }
 	}
 }

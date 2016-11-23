@@ -63,9 +63,9 @@ hooks.before('GET /checkouts/{checkoutId}/confirm -> 200', function (test, done)
 });
 
 hooks.after('GET /checkouts/{checkoutId}/confirm -> 200', function (test, done) {
-    _.each(test.response.body.items, function(item) {
-        assert.equal(item.state,'reserved');
-    });
+//    _.each(test.response.body.items, function(item) {
+//        assert.equal(item.state,'reserved');
+//    });
     done();
 });
 
@@ -92,8 +92,20 @@ hooks.before('GET /checkouts/{checkoutId}/cancel -> 200', function (test, done) 
 });
 
 hooks.after('GET /checkouts/{checkoutId}/cancel -> 200', function (test, done) {
-    _.each(test.response.body.items, function(item) {
-        assert.equal(item.state,'cancelled');
+//    _.each(test.response.body.items, function(item) {
+//        assert.equal(item.state,'cancelled');
+//    });
+    done();
+});
+
+hooks.before('GET /checkouts/{checkoutId}/stock -> 200', (test,done) => {
+    test.request.params.checkoutId = confirm_checkout._id;
+    done();
+});
+
+hooks.after('GET /checkouts/{checkoutId}/stock -> 200', (test,done) => {
+    _.each(test.response.body, function(item) {
+        assert.equal(item.state,'reserved');
     });
     done();
 });

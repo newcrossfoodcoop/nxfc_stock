@@ -18,8 +18,24 @@ var CheckoutSchema = new Schema({
         default: 'new'
     },
     items: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Stock'
+        name: { 
+            type: String,
+            required: true 
+        },
+        cost: { type: Number },
+        price: { type: Number },
+        quantity: { 
+            type: Number,
+            required: true 
+        },
+        productId: { 
+            type: Schema.Types.ObjectId, 
+            required: true 
+        },
+        supplierId: { 
+            type: Schema.Types.ObjectId, 
+            required: true 
+        }
     }],
     pickup: {
         type: Schema.Types.ObjectId,

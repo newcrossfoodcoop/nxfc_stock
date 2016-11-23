@@ -53,33 +53,35 @@ function addStockItem(checkout, item, cb) {
         productId: item.productId,
         supplierId: item.supplierId,
         pickup: checkout.pickup,
-        purchasePrice: item.purchasePrice,
+        price: item.price,
+        cost: item.cost,
+        name: item.name,
         quantity: item.quantity
     });
     
     stock.save(function(err, doc) {
         if (err) { return cb(err); }
-        checkout.items.push(doc);
+        checkout.items.push(item);
         cb(null);
     });
 }
 
-function attachPickup(checkout, pickupId, cb) {
-    if (!pickupId) { return cb(new Error('No pickup supplied')); }
-    
-    Pickup.findOne({ _id: pickupId }, function(err, pickup) {
-        if (err) { return cb(err); }
-        if (!pickup) { return cb(new Error('Pickup not found')); }
-        
-        if (pickup.state === 'open') {
-            checkout.pickup = pickup;
-            cb();
-        }
-        else {
-            cb(new Error('Pickup not open'));
-        }
-    });
-}
+//function attachPickup(checkout, pickupId, cb) {
+//    if (!pickupId) { return cb(new Error('No pickup supplied')); }
+//    
+//    Pickup.findOne({ _id: pickupId }, function(err, pickup) {
+//        if (err) { return cb(err); }
+//        if (!pickup) { return cb(new Error('Pickup not found')); }
+//        
+//        if (pickup.state === 'open') {
+//            checkout.pickup = pickup;
+//            cb();
+//        }
+//        else {
+//            cb(new Error('Pickup not open'));
+//        }
+//    });
+//}
 
 exports.create = function create (req,res) {
     
@@ -89,21 +91,59 @@ exports.create = function create (req,res) {
 	    orderId: req.body.orderId
 	});
 	
-	async.series([
-	    _.partial(attachPickup, checkout, req.body.pickup),
-	    checkout.save,
-	    _.partial(async.eachSeries, items, _.partial(addStockItem, checkout)),
-	    checkout.save
-	],function(err, results) {
-	    if (err) {
-	        res.status(400).send({
-				message: getErrorMessage(err)
-			});
+	new Promise((resolve,reject) => {
+	    if (!req.body.pickup) { reject(new Error('No pickup supplied')); }
+	    else { resolve(req.body.pickup); }
+	})
+	.then((pickupId) => {
+	    return Pickup.findOne({ _id: req.body.pickup });
+	})
+	.then((pickup) => {
+	    if (pickup.state === 'open') {
+	        checkout.pickup = pickup;
 	    }
 	    else {
-	        res.json(checkout);
-	    }
+            throw(new Error('Pickup not open'));
+        }
+	})
+	.then(() => {
+	    return checkout.save();
+	})
+	.then(() => {
+	    return new Promise((resolve, reject) => {
+	        async.eachSeries(
+	            items, 
+	            _.partial(addStockItem, checkout), 
+	            (err) => {
+	                if (err) { return reject(err); }
+	                resolve();
+	            }
+	        );
+	    });
+	})
+	.then(() => {
+	    return checkout.save();
+	})
+	.then((doc) => { res.jsonp(doc); })
+	.catch((err) => {
+	    res.status(400).send({ message: getErrorMessage(err) });
 	});
+	    
+//	async.series([
+//	    _.partial(attachPickup, checkout, req.body.pickup),
+//	    checkout.save,
+//	    _.partial(async.eachSeries, items, _.partial(addStockItem, checkout)),
+//	    checkout.save
+//	],function(err, results) {
+//	    if (err) {
+//	        res.status(400).send({
+//				message: getErrorMessage(err)
+//			});
+//	    }
+//	    else {
+//	        res.json(checkout);
+//	    }
+//	});
 
 };
 
@@ -147,18 +187,24 @@ exports.confirm = function(req, res) {
 
     checkout.state = 'confirmed';
     
-    new Promise((resolve, reject) => {
-        async.eachSeries(
-            checkout.items, 
-            (item, cb) => { item.state = 'reserved'; item.save(cb); },
-            (err) => { return err ? reject(err) : resolve(); }
-        );
-    })
-    .then(checkout.save)
-    .then(() => { res.jsonp(checkout); })
-    .catch((err) => {
-        res.send(400, { message: getErrorMessage(err) });
-    });
+    checkout
+        .save()
+        .then(() => {
+            return Stock.find({checkout: checkout._id});
+        })
+        .then((items) => {
+            return new Promise((resolve, reject) => {
+                async.eachSeries(
+                    items,
+                    (item, cb) => { item.state = 'reserved'; item.save(cb); },
+                    (err) => { return err ? reject(err) : resolve(); }
+                );
+            });
+        })
+        .then(() => { res.jsonp(checkout); })
+        .catch((err) => {
+            res.send(400, { message: getErrorMessage(err) });
+        });
 };
 
 /**
@@ -175,18 +221,35 @@ exports.cancel = function(req, res) {
 
     checkout.state = 'cancelled';
     
-    new Promise((resolve, reject) => {
-        async.eachSeries(
-            checkout.items,
-            (item, cb) => { item.state = 'cancelled'; item.save(cb); },
-            (err) => { return err ? reject(err) : resolve(); }
-        );
-    })
-    .then(checkout.save)
-    .then(() => { res.jsonp(checkout); })
-    .catch((err) => {
-        res.send(400, { message: getErrorMessage(err) });
-    });
+    checkout
+        .save()
+        .then(() => {
+            return Stock.find({checkout: checkout._id});
+        })
+        .then((items) => {
+            return new Promise((resolve, reject) => {
+                async.eachSeries(
+                    items,
+                    (item, cb) => { item.state = 'cancelled'; item.save(cb); },
+                    (err) => { return err ? reject(err) : resolve(); }
+                );
+            });
+        })
+        .then(() => { res.jsonp(checkout); })
+        .catch((err) => {
+            res.send(400, { message: getErrorMessage(err) });
+        });
+};
+
+exports.stock = function(req, res) {
+    var checkout = req.checkout;
+    
+    Stock
+        .find({checkout: checkout._id})
+        .then((results) => { res.jsonp(results); })
+        .catch((err) => {
+            res.send(400, { message: getErrorMessage(err) });
+        });
 };
 
 /**
@@ -227,7 +290,6 @@ exports.list = function(req, res) {
  */
 exports.checkoutByID = function(req, res, next, id) { 
     Checkout.findById(id)
-        .populate('items')
         .exec(function(err, checkout) {
 		    if (err) return next(err);
 		    if (! checkout) return next(new Error('Failed to load checkout ' + id));

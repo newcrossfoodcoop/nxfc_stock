@@ -1,7 +1,8 @@
 #%RAML 0.8
 
-title: Stock Service
+title: NXFC Stock
 baseUri: http://localhost:3040/api
+version: 0.1.0
 
 schemas:
   - Location: !include schema/location.json
@@ -114,6 +115,46 @@ resourceTypes:
             "end": "2016-10-28T16:00:00.000Z",
             "state": "open"
           }
+  put:
+    description: Update Pickup
+    body:
+      application/json:
+        schema: Pickup
+        example: |
+          {
+            "description": "Updated description"
+          }
+    responses:
+      200:
+        body:
+          application/json:
+            schema: Pickup
+  /current:
+    get:
+      description: "Current pickups - Not complete"
+      responses:
+        200:
+          body:
+            application/json:
+              schema: |
+                {
+                  "$schema": "http://json-schema.org/draft-03/schema#", 
+                  "type": "array", 
+                  "properties": { "$ref": "Pickup" } 
+                }
+  /open:
+    get:
+      description: "Open pickups - Can be ordered against"
+      responses:
+        200:
+          body:
+            application/json:
+              schema: |
+                {
+                  "$schema": "http://json-schema.org/draft-03/schema#", 
+                  "type": "array", 
+                  "properties": { "$ref": "Pickup" } 
+                }
   /{pickupId}:
     type: { typedMember: { schema: Pickup } }
     /close:
@@ -138,20 +179,18 @@ resourceTypes:
               { 
                 "productId": "1234567890abcdef123456a2", 
                 "supplierId": "1234567890abcdef123456a3",
-                "purchasePrice": 12.12,
-                "quantity": {
-                  "amount": 4,
-                  "unit": "unit"
-                }
+                "name": "Dummy Product",
+                "price": 3.03,
+                "cost": 3.03,
+                "quantity": 4
               },
               { 
                 "productId": "1234567890abcdef123456a2", 
                 "supplierId": "1234567890abcdef123456a3",
-                "purchasePrice": 12.12,
-                "quantity": {
-                  "amount": 4,
-                  "unit": "unit"
-                }
+                "name": "Dummy Product",
+                "price": 3.03,
+                "cost": 3.03,
+                "quantity": 4
               }
             ]
           }
@@ -173,6 +212,19 @@ resourceTypes:
             body:
               application/json:
                 schema: Checkout
+    /stock:
+      get:
+        description: "Return stock for this checkout"
+        responses:
+          200:
+            body:
+              application/json:
+                schema: |
+                 {
+                    "$schema": "http://json-schema.org/draft-03/schema#", 
+                    "type": "array", 
+                    "properties": { "$ref": "Stock" } 
+                  }
 
 /pickups/{pickupId}/order:
     get:

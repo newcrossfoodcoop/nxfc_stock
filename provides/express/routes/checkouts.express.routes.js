@@ -20,6 +20,9 @@ module.exports = function(app) {
 	app.route('/api/checkouts/:checkoutId/cancel')
 	    .get(checkouts.cancel);
 
+	app.route('/api/checkouts/:checkoutId/stock')
+	    .get(checkouts.stock);
+
 	// Finish by binding the Product middleware
 	app.param('checkoutId', checkouts.checkoutByID);
 };

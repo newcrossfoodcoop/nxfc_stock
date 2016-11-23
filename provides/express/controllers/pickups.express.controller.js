@@ -211,7 +211,10 @@ exports.delete = function(req, res) {
  * List of pickups
  */
 exports.list = function(req, res) { 
-    Pickup.find().sort('-created')
+    Pickup.find()
+        .select('-orders')
+        .sort('-created')
+        .populate('location')
         .exec(function(err, pickups) {
 		    if (err) {
 			    return res.send(400, {
@@ -228,6 +231,7 @@ exports.list = function(req, res) {
  */
 exports.pickupByID = function(req, res, next, id) { 
     Pickup.findById(id)
+        .populate('location')
         .exec(function(err, pickup) {
 		    if (err) return next(err);
 		    if (! pickup) return next(new Error('Failed to load pickup ' + id));

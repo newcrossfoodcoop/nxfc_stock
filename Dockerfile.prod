@@ -17,4 +17,6 @@ ADD config /home/app/config
 
 RUN npm prune --production
 
-CMD ["node provides/express"]
+ENTRYPOINT ["/usr/bin/node"]
+
+CMD ["provides/express"]

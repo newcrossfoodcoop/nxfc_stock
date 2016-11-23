@@ -59,23 +59,22 @@ var StockSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Location'
     },
-    supplierPrice: {
-        type: Number
+    name: {
+        type: String,
+        required: true
     },
-    purchasePrice: {
-        type: Number
+    cost: {
+        type: Number,
+        required: true
+    },
+    price: {
+        type: Number,
+        required: true
     },
     quantity: {
-        amount: {
-            type: Number,
-            min: 1,
-            required: 'Stock tickets must have a quantity.amount'
-        },
-        unit: {
-            type: String,
-            enum: ['unit', 'case'],
-            required: 'Stock tickets must have a quantity.unit'
-        }
+        type: Number,
+        min: 1,
+        required: true
     },
     updated: {
 		type: Date,
