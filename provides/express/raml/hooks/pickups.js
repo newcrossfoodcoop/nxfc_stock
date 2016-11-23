@@ -102,3 +102,21 @@ hooks.before('GET /pickups/{pickupId}/checkouts -> 200', function (test, done) {
     test.request.params.pickupId = order_pickup._id;
     done();
 });
+
+var put_pickup;
+// seed an extra pickup for put
+hooks.after('POST /pickups -> 200', function (test, done) {
+    request.post(
+        test.request.server + test.request.path,
+        {form: test.request.body, json: true},
+        function(err,res,bod) {
+            put_pickup = bod;
+            done(err);
+        }
+    );
+});
+
+hooks.before('PUT /pickups/{pickupId} -> 200', function (test, done) {
+    test.request.params.pickupId = put_pickup._id;
+    done();
+});
