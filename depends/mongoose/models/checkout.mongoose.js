@@ -12,6 +12,7 @@ var CheckoutSchema = new Schema({
         required: 'External orderId must be provided',
         unique: true
     },
+    user: { type: Object },
     state: {
         type: String,
         enum: ['new', 'confirmed', 'cancelled'],
