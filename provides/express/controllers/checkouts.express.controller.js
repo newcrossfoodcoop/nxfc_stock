@@ -93,12 +93,10 @@ exports.create = function create (req,res) {
 	    user: req.body.user
 	});
 	
-	new Promise((resolve,reject) => {
-	    if (!req.body.pickup) { reject(new Error('No pickup supplied')); }
-	    else { resolve(req.body.pickup); }
-	})
+	Promise.resolve(req.body.pickup)
 	.then((pickupId) => {
-	    return Pickup.findOne({ _id: req.body.pickup });
+	    if (!pickupId) { throw new Error('No pickup supplied'); }
+	    return Pickup.findOne({ _id: pickupId });
 	})
 	.then((pickup) => {
 	    if (pickup.state === 'open') {
@@ -109,6 +107,7 @@ exports.create = function create (req,res) {
         }
 	})
 	.then(() => {
+	    if (!req.body.user) { throw new Error('No user supplied'); }
 	    return checkout.save();
 	})
 	.then(() => {
