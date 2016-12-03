@@ -88,7 +88,8 @@ exports.create = function create (req,res) {
     var items = req.body.items;
     
 	var checkout = new Checkout({ 
-	    orderId: req.body.orderId
+	    orderId: req.body.orderId,
+	    user: req.body.user
 	});
 	
 	new Promise((resolve,reject) => {
