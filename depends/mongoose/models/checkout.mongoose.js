@@ -13,8 +13,10 @@ var CheckoutSchema = new Schema({
         unique: true
     },
     user: { 
-        type: Object,
-        required: true 
+        _id: { type: String, required: true },
+        username: { type: String, required: true },
+        displayName: { type: String, required: true },
+        email: { type: String, required: true }
     },
     state: {
         type: String,
