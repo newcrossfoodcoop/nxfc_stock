@@ -33,6 +33,7 @@ var getErrorMessage = function(err) {
 			if (err.errors[errName].message) message = err.errors[errName].message;
 		}
 	} else {
+	    console.error(err.stack);
 	    message = err.message;
 	}
 
@@ -204,7 +205,7 @@ exports.confirm = function(req, res) {
         })
         .then(() => { res.jsonp(checkout); })
         .catch((err) => {
-            res.send(400, { message: getErrorMessage(err) });
+            res.status(400).send({ message: getErrorMessage(err) });
         });
 };
 
