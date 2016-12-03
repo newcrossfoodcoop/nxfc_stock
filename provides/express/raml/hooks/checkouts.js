@@ -9,6 +9,13 @@ var randomstring = require('randomstring');
 
 var checkout, pickup;
 
+var dummyUser = { 
+    _id: randomstring.generate({ length: 24, charset: 'hex' }),
+    username: 'dummy',
+    displayName: 'dummy display name',
+    email: 'dummy@dummy.com'
+};
+
 // seed an extra location for pickup
 hooks.after('POST /pickups -> 200', function (test, done) {
     request.post(
@@ -28,6 +35,7 @@ hooks.before('GET /checkouts/{checkoutId} -> 200', function (test, done) {
 
 hooks.after('POST /checkouts -> 200', function (test, done) {
     checkout = test.response.body;
+    assert.ok(checkout.user._id);
     done();
 });
 
@@ -37,6 +45,7 @@ hooks.before('POST /checkouts -> 200', function (test, done) {
         charset: 'hex'
     });
     test.request.body.pickup = pickup._id;
+    test.request.body.user = dummyUser;
     done();
 });
 
