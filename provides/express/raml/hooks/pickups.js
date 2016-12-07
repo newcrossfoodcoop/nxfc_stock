@@ -84,7 +84,15 @@ hooks.after('POST /checkouts -> 200', function (test, done) {
     );
 });
 
-// close order pickup
+// confirm checkout
+hooks.after('POST /checkouts -> 200', function (test, done) {
+    request.get(
+        test.request.server + '/checkouts/'+ order_checkout._id +'/confirm',
+        done
+    );
+});
+
+// close pickup
 hooks.after('POST /checkouts -> 200', function (test, done) {
     request.get(
         test.request.server + '/pickups/'+ order_pickup._id +'/close',

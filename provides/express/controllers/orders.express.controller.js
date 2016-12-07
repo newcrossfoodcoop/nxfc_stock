@@ -1,16 +1,21 @@
 'use strict';
 
+const _ = require('lodash');
+const path = require('path');
+const assert = require('assert');
+
 /**
  * Module dependencies.
  */
 
-var mongoose = require('mongoose'),
+const mongoose = require('mongoose'),
 	Order = mongoose.model('Order'),
 	Delivery = mongoose.model('Delivery'),
 	Stock = mongoose.model('Stock');
-	
-var	_ = require('lodash');
-var debug = require('debug')('provides:express:orders');
+
+const debug = require('debug')('provides:express:orders');
+
+const ordersApi = require(path.resolve('./depends/catalogue')).api.resources.orders;
 
 /**
  * Get the error message from error object
@@ -110,6 +115,43 @@ exports.delivered = (req, res) => {
         .then((doc) => { res.jsonp(doc); })
         .catch((err) => { 
             res.status(400).send({ message: getErrorMessage(err) });
+        });
+};
+
+// Not being called by a route
+exports.place = function(orderId) {
+    var order;
+    return Order
+        .findById(orderId)
+        .then((doc) => {
+            order = doc;
+            var items = _(order.items)
+                .map((item) => {
+                    return {
+                        product: item.productId,
+                        quantity: item.quantity,
+                        purchasePaid: item.purchasePaid
+                    };
+                })
+                .valueOf();
+                
+            return ordersApi.post({
+                supplier: order.supplierId,
+                items: items,
+                stockOrderId: order._id,
+                deliveryAddress: order.deliveryAddress,
+                deliveryMessage: order.deliveryMessage
+            });
+        })
+        .then((sres) => {
+            assert.equal(sres.status,200,'Supplier order placement failed: ' + sres.body.message);
+            order.state = 'placed';
+            order.supplierOrderId = sres.body._id;
+            return order.save();
+        })
+        .catch((err) => {
+            console.error('PLACE ERROR', err.stack);
+            throw err;
         });
 };
 

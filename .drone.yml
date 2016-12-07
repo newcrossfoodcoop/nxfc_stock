@@ -17,6 +17,12 @@ build:
 compose:
   mongo:
     image: mongo:3
+  catalogue:
+    image: newcrossfoodcoop/nxfc_catalogue:latest
+    pull: true
+    command: gulp test:api
+    environment:
+      - NODE_ENV=test
 
 publish:
       

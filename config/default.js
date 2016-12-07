@@ -19,7 +19,8 @@ module.exports = {
         mongoose: {
             name: 'nxfc-stock',
             models: 'depends/mongoose/models/*.js'
-        }
+        },
+        catalogue: {}
     },
     provides: {
         express: {

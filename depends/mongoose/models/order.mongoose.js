@@ -17,17 +17,28 @@ var OrderSchema = new Schema({
             required: true
         },
         purchasePaid: {
-            type: Number,
-            required: true
+            type: Number
         }
     }],
     state: {
-        type: 'string',
-        enum: ['created', 'delivered'],
+        type: String,
+        enum: ['created', 'placed', 'delivered'],
         default: 'created'
     },
     supplierId: {
         type: Schema.Types.ObjectId,
+        required: true
+    },
+    supplierOrderId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Catalogue.Order'
+    },
+    deliveryAddress: {
+        type: String,
+        required: true
+    },
+    deliveryMessage: {
+        type: String,
         required: true
     },
     pickup: {

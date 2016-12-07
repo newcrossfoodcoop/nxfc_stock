@@ -15,6 +15,9 @@ var LocationSchema = new Schema({
     description: {
         type: String
     },
+    address: {
+        type: String
+    },
     url: {
         type: String,
         validate: {

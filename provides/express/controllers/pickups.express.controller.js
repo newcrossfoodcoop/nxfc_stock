@@ -10,6 +10,8 @@ var mongoose = require('mongoose'),
 	Order = mongoose.model('Order'),
 	Checkout = mongoose.model('Checkout');
 
+var ordersController = require('./orders.express.controller');
+
 var	_ = require('lodash');
 var async = require('async');
 
@@ -119,11 +121,11 @@ exports.order = (req, res) => {
     pickup.save()
         .then(() => {
             return Stock.aggregate([
-                { $match: { pickup: pickup._id, state: 'checkout' } },
-                { $group: { 
-                    _id: { productId: '$productId', supplierId: '$supplierId' }, 
-                    quantity: { $sum: '$quantity.amount' },
-                    purchasePaid: { $sum: '$purchasePrice' }
+                { $match: { pickup: pickup._id, state: 'reserved' } },
+                { $group: {
+                    // TODO: price really should already be aggregated as total
+                    _id: { productId: '$productId', supplierId: '$supplierId', name: '$name', price: '$price' }, 
+                    quantity: { $sum: '$quantity' }
                 } }
             ]);
         })
@@ -132,17 +134,20 @@ exports.order = (req, res) => {
             _.each(results, (result) => {
                 var order = orders[result._id.supplierId];
                 if (!order) {
+                    var deliveryMessage = 'For delivery on: ' + new Date(pickup.start).toDateString();
                     order = 
-                        orders[result._id.supplierId] = 
+                    orders[result._id.supplierId] = 
                         new Order({
                             supplierId: result._id.supplierId,
-                            pickup: pickup._id
+                            pickup: pickup._id,
+                            deliveryMessage: deliveryMessage,
+                            deliveryAddress: pickup.location.address
                         });
                 }
                 order.items.push({
                     productId: result._id.productId,
                     quantity: result.quantity,
-                    purchasePaid: result.purchasePaid
+                    purchasePaid: result._id.price * result.quantity 
                 });
                 
             });
@@ -161,12 +166,23 @@ exports.order = (req, res) => {
             });
         })
         .then(pickup.save)
-        .then((doc) => { return Order.populate(doc, {path: 'orders'}); })
+        .then(() => {
+            return new Promise((resolve, reject) => {
+                async.eachSeries(pickup.orders, (order,cb) => {
+                    ordersController.place(order)
+                        .then(() => { cb(); })
+                        .catch((err) => { cb(err); });
+                },(err) => {
+                    if (err) { return reject(err); }
+                    resolve();
+                });
+            });
+        })
+        .then(() => { return Order.populate(pickup, {path: 'orders'}); })
         .then((doc) => { res.jsonp(doc); })
         .catch((err) => { 
             res.status(400).send({ message: getErrorMessage(err) }); 
         });
-
 };
 
 exports.stockByCheckout = (req, res) => {
