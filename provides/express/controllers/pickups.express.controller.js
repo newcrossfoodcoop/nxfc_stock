@@ -117,18 +117,15 @@ exports.order = (req, res) => {
 		});
 	}
 
-    pickup.state = 'ordered';
-    pickup.save()
-        .then(() => {
-            return Stock.aggregate([
-                { $match: { pickup: pickup._id, state: 'reserved' } },
-                { $group: {
-                    // TODO: price really should already be aggregated as total
-                    _id: { productId: '$productId', supplierId: '$supplierId', name: '$name', price: '$price' }, 
-                    quantity: { $sum: '$quantity' }
-                } }
-            ]);
-        })
+    Stock
+        .aggregate([
+            { $match: { pickup: pickup._id, state: 'reserved' } },
+            { $group: {
+                // TODO: price really should already be aggregated as total
+                _id: { productId: '$productId', supplierId: '$supplierId', name: '$name', price: '$price' }, 
+                quantity: { $sum: '$quantity' }
+            } }
+        ])
         .then((results) => {
             var orders = {};
             _.each(results, (result) => {
@@ -156,6 +153,7 @@ exports.order = (req, res) => {
         })
         .then((orders) => {
             return new Promise((resolve, reject) => {
+                pickup.state = 'ordered';
                 async.eachSeries(_.values(orders), (order,cb) => {
                     pickup.orders.push(order);
                     order.save(cb);
@@ -247,7 +245,20 @@ exports.list = function(req, res) {
  */
 exports.pickupByID = function(req, res, next, id) { 
     Pickup.findById(id)
+        .select('-orders')
         .populate('location')
+        .exec(function(err, pickup) {
+		    if (err) return next(err);
+		    if (! pickup) return next(new Error('Failed to load pickup ' + id));
+		    req.pickup = pickup ;
+		    next();
+	    });
+};
+
+exports.pickupByIDwithOrders = function(req, res, next, id) { 
+    Pickup.findById(id)
+        .populate('location')
+        .populate('orders')
         .exec(function(err, pickup) {
 		    if (err) return next(err);
 		    if (! pickup) return next(new Error('Failed to load pickup ' + id));

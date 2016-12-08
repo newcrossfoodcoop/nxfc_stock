@@ -101,7 +101,20 @@ resourceTypes:
           }
   /{locationId}:
     type: { typedMember: { schema: Location } }
-
+    put:
+      description: Update Location
+      body:
+        application/json:
+          schema: Location
+          example: |
+            {
+              "description": "Updated description"
+            }
+      responses:
+        200:
+          body:
+            application/json:
+              schema: Location
 /pickups:
   displayName: Pickup
   type: { typedMemberCollection: { schema: Pickup } }
@@ -203,9 +216,16 @@ resourceTypes:
                     "properties": { "$ref": "Stock" } 
                   }
 
-/pickups/{pickupId}/order:
-    get:
+/pickups/{pickupId}/orders:
+    put:
       description: "Create supplier order(s) for this pickup"
+      responses:
+        200:
+          body:
+            application/json:
+              schema: Pickup
+    get:
+      description: "Return the pickup with populated orders"
       responses:
         200:
           body:

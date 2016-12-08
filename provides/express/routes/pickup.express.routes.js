@@ -17,12 +17,15 @@ module.exports = function(app) {
 	app.route('/api/pickups/:pickupId/close')
 		.get(pickups.close);
 
-	app.route('/api/pickups/:pickupId/order')
-		.get(pickups.order);
+	app.route('/api/pickups/:adminPickupId/orders')
+	    .put(pickups.order)
+		.get(pickups.read);
 
 	app.route('/api/pickups/:pickupId/checkouts')
 		.get(pickups.stockByCheckout);
 
 	// Finish by binding the Product middleware
 	app.param('pickupId', pickups.pickupByID);
+	app.param('adminPickupId', pickups.pickupByIDwithOrders);
+	
 };

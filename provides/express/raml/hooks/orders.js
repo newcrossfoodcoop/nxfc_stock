@@ -4,7 +4,7 @@ var hooks = require('hooks'),
     assert = require('assert');
 
 var pickup;
-hooks.after('GET /pickups/{pickupId}/order -> 200', function (test, done) {
+hooks.after('GET /pickups/{pickupId}/orders -> 200', function (test, done) {
     pickup = test.response.body;
     done();
 });

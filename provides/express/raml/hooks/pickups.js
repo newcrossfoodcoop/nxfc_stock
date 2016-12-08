@@ -100,11 +100,15 @@ hooks.after('POST /checkouts -> 200', function (test, done) {
     );
 });
 
-hooks.before('GET /pickups/{pickupId}/order -> 200', function (test, done) {
+hooks.before('PUT /pickups/{pickupId}/orders -> 200', function (test, done) {
     test.request.params.pickupId = order_pickup._id;
     done();
 });
 
+hooks.before('GET /pickups/{pickupId}/orders -> 200', function (test, done) {
+    test.request.params.pickupId = order_pickup._id;
+    done();
+});
 
 hooks.before('GET /pickups/{pickupId}/checkouts -> 200', function (test, done) {
     test.request.params.pickupId = order_pickup._id;
