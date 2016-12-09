@@ -26,7 +26,7 @@ var PickupSchema = new Schema({
     // pickup is open if checkouts can be made against it
     state: {
         type: String,
-        enum: ['open', 'closed', 'ordered'],
+        enum: ['open', 'closed', 'ordered', 'complete'],
         required: 'A pickup must have a state'
     },
     orders: [{

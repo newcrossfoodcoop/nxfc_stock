@@ -1,5 +1,9 @@
 'use strict';
 
+var assert = require('assert');
+var	_ = require('lodash');
+var async = require('async');
+
 /**
  * Module dependencies.
  */
@@ -11,9 +15,6 @@ var mongoose = require('mongoose'),
 	Checkout = mongoose.model('Checkout');
 
 var ordersController = require('./orders.express.controller');
-
-var	_ = require('lodash');
-var async = require('async');
 
 /**
  * Get the error message from error object
@@ -167,7 +168,19 @@ exports.order = (req, res) => {
         .then(() => {
             return new Promise((resolve, reject) => {
                 async.eachSeries(pickup.orders, (order,cb) => {
-                    ordersController.place(order)
+                    ordersController
+                        .place(order)
+                        .then(() => {
+                            return Stock.update({ 
+                                pickup: pickup._id, 
+                                supplierId: order.supplierId,
+                                state: 'reserved'
+                            },{
+                                state: 'ordered'
+                            },{
+                                multi: true
+                            });
+                        })
                         .then(() => { cb(); })
                         .catch((err) => { cb(err); });
                 },(err) => {
@@ -203,6 +216,28 @@ exports.stockByCheckout = (req, res) => {
         });
 };
 
+exports.updateStock = (req, res) => {
+    var stock = req.stock;
+    var pickup = req.pickup;
+    
+//    if (pickup.state !== 'closed') {
+//        return res.status(400).send({ message: 
+//            'Pickup.state not closed, cannot modify stock' 
+//        });
+//    }
+    
+//    stock = _.extend(stock , req.body);
+    stock.state = req.body.state;
+
+	stock
+	    .save()
+	    .then(() => { res.jsonp(stock); })
+	    .catch((err) => {
+	        res.status(400).send({
+				message: getErrorMessage(err)
+			});
+	    });
+};
 
 /**
  * Delete an pickup
@@ -253,6 +288,23 @@ exports.pickupByID = function(req, res, next, id) {
 		    req.pickup = pickup ;
 		    next();
 	    });
+};
+
+exports.pickupStockByID = function(req, res, next, id) {
+    if (!req.pickup) {
+        return next(new Error('No pickup found, cannot get its stock'));
+    }
+    
+    Stock
+        .where({ _id : id, pickup: req.pickup._id })
+        .findOne()
+        .exec()
+        .then((stock) => {
+            assert(stock, 'Failed to load stock ' + id);
+            req.stock = stock;
+            next();
+        })
+        .catch(next);
 };
 
 exports.pickupByIDwithOrders = function(req, res, next, id) { 

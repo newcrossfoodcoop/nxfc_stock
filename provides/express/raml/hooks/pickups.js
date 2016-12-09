@@ -5,6 +5,7 @@ var hooks = require('hooks'),
 
 var request = require('request');
 var randomstring = require('randomstring');
+var _ = require('lodash');
 
 var pickup, location;
 
@@ -115,6 +116,13 @@ hooks.before('GET /pickups/{pickupId}/checkouts -> 200', function (test, done) {
     done();
 });
 
+hooks.after('GET /pickups/{pickupId}/checkouts -> 200', function (test, done) {
+    _.each(test.response.body[0].stock, (entry) => {
+        assert.equal(entry.state, 'ordered');  
+    });
+    done();
+});
+
 var put_pickup;
 // seed an extra pickup for put
 hooks.after('POST /pickups -> 200', function (test, done) {
@@ -130,5 +138,17 @@ hooks.after('POST /pickups -> 200', function (test, done) {
 
 hooks.before('PUT /pickups/{pickupId} -> 200', function (test, done) {
     test.request.params.pickupId = put_pickup._id;
+    done();
+});
+
+var pickup_stock;
+hooks.after('GET /pickups/{pickupId}/checkouts -> 200', (test, done) => {
+    pickup_stock = test.response.body[0].stock[0];
+    done();
+});
+
+hooks.before('PUT /pickups/{pickupId}/stocks/{stockId} -> 200', (test,done) => {
+    test.request.params.pickupId = order_pickup._id;
+    test.request.params.stockId = pickup_stock._id;
     done();
 });

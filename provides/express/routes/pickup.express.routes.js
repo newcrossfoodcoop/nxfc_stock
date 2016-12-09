@@ -23,9 +23,13 @@ module.exports = function(app) {
 
 	app.route('/api/pickups/:pickupId/checkouts')
 		.get(pickups.stockByCheckout);
+		
+	app.route('/api/pickups/:pickupId/stocks/:pickupStockId')
+		.put(pickups.updateStock);
 
 	// Finish by binding the Product middleware
 	app.param('pickupId', pickups.pickupByID);
+	app.param('pickupStockId', pickups.pickupStockByID);
 	app.param('adminPickupId', pickups.pickupByIDwithOrders);
 	
 };
