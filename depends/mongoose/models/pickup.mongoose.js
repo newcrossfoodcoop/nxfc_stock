@@ -13,21 +13,21 @@ var PickupSchema = new Schema({
     location: {
         type: Schema.Types.ObjectId,
         ref: 'Location',
-        required: 'A pickup must have a location'
+        required: true
     },
     start: {
         type: Date,
-        required: 'A pickup must have a start'
+        required: true
     },
     end: {
         type: Date,
-        required: 'A pickup must have an end'
+        required: true
     },
     // pickup is open if checkouts can be made against it
     state: {
         type: String,
         enum: ['open', 'closed', 'ordered', 'complete'],
-        required: 'A pickup must have a state'
+        required: true
     },
     orders: [{
         type: Schema.Types.ObjectId,
