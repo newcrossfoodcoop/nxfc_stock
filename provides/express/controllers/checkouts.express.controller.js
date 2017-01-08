@@ -244,7 +244,7 @@ exports.finalise = function(req, res) {
 	        
 	        _(items).each((item) => {
 	            var instruction = {
-	                productId : item,
+	                productId : item.productId,
 	                quantity: item.quantity,
 	            };
 	            
@@ -267,7 +267,10 @@ exports.finalise = function(req, res) {
 	        
 	        return checkoutOrdersApi.orderId(checkout.orderId).finalise.put(instructions)
 	            .then((finalRes) => { 
-	                assert.equal(finalRes.status,200,finalRes.body); 
+	                assert.equal(
+	                    finalRes.status,200,
+	                    (finalRes.body ? 'Checkout: ' + finalRes.body.message : null)
+	                ); 
 	            });
 	    })
 	    .then(() => {         
