@@ -8,6 +8,12 @@ module.exports = function(app) {
 	app.route('/api/pickups')
 	    .get(pickups.list)
 		.post(pickups.create);
+	
+	app.route('/api/pickups/open')
+	    .get(pickups.listOpen);
+	    
+	app.route('/api/pickups/active')
+	    .get(pickups.listActive);
 
 	app.route('/api/pickups/:pickupId')
 		.get(pickups.read)
@@ -16,6 +22,9 @@ module.exports = function(app) {
 
 	app.route('/api/pickups/:pickupId/close')
 		.get(pickups.close);
+	
+	app.route('/api/pickups/:pickupId/archive')
+		.get(pickups.archive);
 
 	app.route('/api/pickups/:adminPickupId/orders')
 	    .put(pickups.order)
@@ -27,9 +36,13 @@ module.exports = function(app) {
 	app.route('/api/pickups/:pickupId/stocks/:pickupStockId')
 		.put(pickups.updateStock);
 
+	app.route('/api/pickups/:pickupId/checkouts/:pickupCheckoutId/finalise')
+		.get(pickups.finaliseCheckout);
+
 	// Finish by binding the Product middleware
 	app.param('pickupId', pickups.pickupByID);
 	app.param('pickupStockId', pickups.pickupStockByID);
 	app.param('adminPickupId', pickups.pickupByIDwithOrders);
+	app.param('pickupCheckoutId', pickups.pickupCheckoutByID);
 	
 };

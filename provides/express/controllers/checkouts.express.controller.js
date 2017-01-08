@@ -4,14 +4,19 @@
  * Module dependencies.
  */
 
-var mongoose = require('mongoose');
+const mongoose = require('mongoose');
+const path = require('path');
+const _ = require('lodash');
+const async = require('async');
+const thenify = require('thenify');
+const util = require('util');
+const assert = require('assert');
 
 var	Checkout = mongoose.model('Checkout'),
 	Stock = mongoose.model('Stock'),
 	Pickup = mongoose.model('Pickup');
 	
-var	_ = require('lodash');
-var async = require('async');
+const checkoutOrdersApi = require(path.resolve('./depends/checkout')).api.resources.orders;
 
 /**
  * Get the error message from error object
@@ -111,16 +116,7 @@ exports.create = function create (req,res) {
 	    return checkout.save();
 	})
 	.then(() => {
-	    return new Promise((resolve, reject) => {
-	        async.eachSeries(
-	            items, 
-	            _.partial(addStockItem, checkout), 
-	            (err) => {
-	                if (err) { return reject(err); }
-	                resolve();
-	            }
-	        );
-	    });
+	    return thenify(async.eachSeries)(items,_.partial(addStockItem, checkout));
 	})
 	.then(() => {
 	    return checkout.save();
@@ -129,22 +125,6 @@ exports.create = function create (req,res) {
 	.catch((err) => {
 	    res.status(400).send({ message: getErrorMessage(err) });
 	});
-	    
-//	async.series([
-//	    _.partial(attachPickup, checkout, req.body.pickup),
-//	    checkout.save,
-//	    _.partial(async.eachSeries, items, _.partial(addStockItem, checkout)),
-//	    checkout.save
-//	],function(err, results) {
-//	    if (err) {
-//	        res.status(400).send({
-//				message: getErrorMessage(err)
-//			});
-//	    }
-//	    else {
-//	        res.json(checkout);
-//	    }
-//	});
 
 };
 
@@ -181,7 +161,7 @@ exports.confirm = function(req, res) {
 	var checkout = req.checkout ;
 
 	if (checkout.state !== 'new') {
-	    return res.send(400, {
+	    return res.status(400).send({
 			message: 'Can only confirm "new" checkouts'
 		});
 	}
@@ -194,13 +174,9 @@ exports.confirm = function(req, res) {
             return Stock.find({checkout: checkout._id});
         })
         .then((items) => {
-            return new Promise((resolve, reject) => {
-                async.eachSeries(
-                    items,
-                    (item, cb) => { item.state = 'reserved'; item.save(cb); },
-                    (err) => { return err ? reject(err) : resolve(); }
-                );
-            });
+            return thenify(async.eachSeries)(
+                items,(item, cb) => { item.state = 'reserved'; item.save(cb); }
+            );
         })
         .then(() => { res.jsonp(checkout); })
         .catch((err) => {
@@ -215,7 +191,7 @@ exports.cancel = function(req, res) {
 	var checkout = req.checkout ;
 
 	if (checkout.state !== 'new') {
-	    return res.send(400, {
+	    return res.status(400).send({
 			message: 'Can only cancel "new" checkouts'
 		});
 	}
@@ -228,17 +204,13 @@ exports.cancel = function(req, res) {
             return Stock.find({checkout: checkout._id});
         })
         .then((items) => {
-            return new Promise((resolve, reject) => {
-                async.eachSeries(
-                    items,
-                    (item, cb) => { item.state = 'cancelled'; item.save(cb); },
-                    (err) => { return err ? reject(err) : resolve(); }
-                );
-            });
+            return thenify(async.eachSeries)(
+                items,(item, cb) => { item.state = 'cancelled'; item.save(cb); }
+            );
         })
         .then(() => { res.jsonp(checkout); })
         .catch((err) => {
-            res.send(400, { message: getErrorMessage(err) });
+            res.status(400).send({ message: getErrorMessage(err) });
         });
 };
 
@@ -250,6 +222,66 @@ exports.stock = function(req, res) {
         .then((results) => { res.jsonp(results); })
         .catch((err) => {
             res.send(400, { message: getErrorMessage(err) });
+        });
+};
+
+exports.finalise = function(req, res) {
+    var checkout = req.checkout;
+    
+    if (checkout.state !== 'confirmed') {
+	    return res.status(400).send({
+			message: 'Can only finalise "confirmed" checkouts'
+		});
+	}
+	
+	var items;
+	
+	Stock
+	    .find({checkout: checkout._id})
+	    .then((_items) => {
+	        items = _items;
+	        var instructions = [];
+	        
+	        _(items).each((item) => {
+	            var instruction = {
+	                productId : item,
+	                quantity: item.quantity,
+	            };
+	            
+	            instructions.push(instruction);
+	            
+	            switch(item.state) {
+	                case 'cancelled':
+	                    instruction.action = 'cancel';
+	                    break;
+	                case 'pickedup':
+	                case 'delivered':
+	                case 'picked':
+	                    instruction.action = 'finalise';
+	                    item.state = 'finalised';
+	                    break;
+	                default:
+	                    throw new Error(util.format('Cannot finalise "%s" stock',item.state));
+	            }
+	        });
+	        
+	        return checkoutOrdersApi.orderId(checkout.orderId).finalise.put(instructions)
+	            .then((finalRes) => { 
+	                assert.equal(finalRes.status,200,finalRes.body); 
+	            });
+	    })
+	    .then(() => {         
+            return thenify(async.eachSeries)(items, (item, cb) => { item.save(cb); });
+	    })
+	    .then(() => {
+	        checkout.state = 'finalised';
+	        return checkout.save();
+	    })
+	    .then(() => {
+	        res.jsonp(checkout);
+	    })
+	    .catch((err) => {
+            res.status(400).send({ message: getErrorMessage(err) });
         });
 };
 

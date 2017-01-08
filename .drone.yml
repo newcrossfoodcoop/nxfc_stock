@@ -11,6 +11,7 @@ build:
       - gulp build
       - gulp test
       - gulp test:express &
+      - osprey-mock-service -f depends/checkout/raml/api.raml -p 3031 &
       - sleep 10s
       - NODE_ENV=test abao provides/express/raml/api.raml --server http://localhost:3041/api --hookfiles=provides/express/raml/hooks/*.js
 

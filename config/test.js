@@ -8,6 +8,11 @@ module.exports = {
             url: {
                 port: 3011
             }
+        },
+        checkout: {
+            url: {
+                port: 3031
+            }
         }
     },
 	provides: {

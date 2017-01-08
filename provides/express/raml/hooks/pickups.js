@@ -118,7 +118,7 @@ hooks.before('GET /pickups/{pickupId}/checkouts -> 200', function (test, done) {
 
 hooks.after('GET /pickups/{pickupId}/checkouts -> 200', function (test, done) {
     _.each(test.response.body[0].stock, (entry) => {
-        assert.equal(entry.state, 'ordered');  
+        assert.equal(entry.state, 'reserved');  
     });
     done();
 });
@@ -150,5 +150,29 @@ hooks.after('GET /pickups/{pickupId}/checkouts -> 200', (test, done) => {
 hooks.before('PUT /pickups/{pickupId}/stocks/{stockId} -> 200', (test,done) => {
     test.request.params.pickupId = order_pickup._id;
     test.request.params.stockId = pickup_stock._id;
+    done();
+});
+
+hooks.after('GET /pickups/{pickupId}/orders -> 200', function (test, done) {
+    var order = test.response.body.orders[0];
+    request.put(
+        test.request.server + '/orders/' + order._id + '/delivered',
+        done
+    );
+});
+
+hooks.before('GET /pickups/{pickupId}/checkouts/{checkoutId}/finalise -> 200', (test, done) => {
+    test.request.params.pickupId = order_pickup._id;
+    test.request.params.checkoutId = pickup_stock.checkout;
+    done();
+});
+
+hooks.before('GET /pickups/{pickupId}/archive -> 400', function (test, done) {
+    test.request.params.pickupId = order_pickup._id;
+    done();
+});
+
+hooks.before('GET /pickups/{pickupId}/archive -> 200', function (test, done) {
+    test.request.params.pickupId = order_pickup._id;
     done();
 });

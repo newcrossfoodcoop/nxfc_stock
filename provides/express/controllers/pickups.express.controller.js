@@ -3,6 +3,7 @@
 var assert = require('assert');
 var	_ = require('lodash');
 var async = require('async');
+var thenify = require('thenify');
 
 /**
  * Module dependencies.
@@ -15,6 +16,7 @@ var mongoose = require('mongoose'),
 	Checkout = mongoose.model('Checkout');
 
 var ordersController = require('./orders.express.controller');
+var checkoutsController = require('./checkouts.express.controller');
 
 /**
  * Get the error message from error object
@@ -153,46 +155,69 @@ exports.order = (req, res) => {
             return orders;
         })
         .then((orders) => {
-            return new Promise((resolve, reject) => {
-                pickup.state = 'ordered';
-                async.eachSeries(_.values(orders), (order,cb) => {
-                    pickup.orders.push(order);
-                    order.save(cb);
-                },(err) => {
-                    if (err) { return reject(err); }
-                    resolve();
-                });
-            });
+            return thenify(async.eachSeries)(
+                _.values(orders), 
+                (order,cb) => { pickup.orders.push(order); order.save(cb); }
+            );
         })
-        .then(pickup.save)
         .then(() => {
-            return new Promise((resolve, reject) => {
-                async.eachSeries(pickup.orders, (order,cb) => {
+            pickup.state = 'ordered';
+            return pickup.save();
+        })
+        .then(() => {
+            return thenify(async.eachSeries)(
+                pickup.orders, 
+                (order,cb) => {
                     ordersController
                         .place(order)
                         .then(() => {
-                            return Stock.update({ 
-                                pickup: pickup._id, 
-                                supplierId: order.supplierId,
-                                state: 'reserved'
-                            },{
-                                state: 'ordered'
-                            },{
-                                multi: true
-                            });
+                            return Stock.update(
+                                { 
+                                    pickup: pickup._id, 
+                                    supplierId: order.supplierId,
+                                    state: 'reserved'
+                                },
+                                { state: 'ordered', order: order._id },
+                                { multi: true }
+                            );
                         })
                         .then(() => { cb(); })
                         .catch((err) => { cb(err); });
-                },(err) => {
-                    if (err) { return reject(err); }
-                    resolve();
                 });
-            });
         })
         .then(() => { return Order.populate(pickup, {path: 'orders'}); })
         .then((doc) => { res.jsonp(doc); })
         .catch((err) => { 
             res.status(400).send({ message: getErrorMessage(err) }); 
+        });
+};
+
+exports.archive = (req, res) => {
+    var pickup = req.pickup;
+    
+    Promise.resolve()
+        .then(() => {
+            assert.equal(pickup.state, 'ordered', 'Can only archive ordered pickups');
+        })
+        .then(() => {
+            return Checkout
+                .find({ pickup: pickup._id, state: { '$ne': 'finalised' } })
+                .exec()
+                .then((checkouts) => { 
+                    if (checkouts && checkouts.length > 0) { 
+                        throw new Error('Unfinalised checkouts discovered'); 
+                    } 
+                });
+        })
+        .then(() => {
+            pickup.state = 'archived';
+            return pickup.save();
+        })
+        .then(() => {
+            res.jsonp(pickup);
+        })
+        .catch((err) => {
+            res.status(400).send({ message: getErrorMessage(err) });
         });
 };
 
@@ -239,6 +264,8 @@ exports.updateStock = (req, res) => {
 	    });
 };
 
+exports.finaliseCheckout = checkoutsController.finalise;
+
 /**
  * Delete an pickup
  */
@@ -261,6 +288,38 @@ exports.delete = function(req, res) {
  */
 exports.list = function(req, res) { 
     Pickup.find()
+        .select('-orders')
+        .sort('-created')
+        .populate('location')
+        .exec(function(err, pickups) {
+		    if (err) {
+			    return res.send(400, {
+				    message: getErrorMessage(err)
+			    });
+		    } else {
+			    res.jsonp(pickups);
+		    }
+	    });
+};
+
+exports.listActive = function(req, res) { 
+    Pickup.find({ state: { '$ne': 'archived' }})
+        .select('-orders')
+        .sort('-created')
+        .populate('location')
+        .exec(function(err, pickups) {
+		    if (err) {
+			    return res.send(400, {
+				    message: getErrorMessage(err)
+			    });
+		    } else {
+			    res.jsonp(pickups);
+		    }
+	    });
+};
+
+exports.listOpen = function(req, res) { 
+    Pickup.find({ state: 'open' })
         .select('-orders')
         .sort('-created')
         .populate('location')
@@ -302,6 +361,23 @@ exports.pickupStockByID = function(req, res, next, id) {
         .then((stock) => {
             assert(stock, 'Failed to load stock ' + id);
             req.stock = stock;
+            next();
+        })
+        .catch(next);
+};
+
+exports.pickupCheckoutByID = function(req, res, next, id) {
+    if (!req.pickup) {
+        return next(new Error('No pickup found, cannot get its checkout'));
+    }
+    
+    Checkout
+        .where({ _id : id, pickup: req.pickup._id })
+        .findOne()
+        .exec()
+        .then((checkout) => {
+            assert(checkout, 'Failed to load checkout ' + id);
+            req.checkout = checkout;
             next();
         })
         .catch(next);

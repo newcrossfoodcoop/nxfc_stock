@@ -12,3 +12,19 @@ services:
     depends_on:
       - mongo
     command: gulp test:express
+  catalogue:
+    network_mode: host
+    image: newcrossfoodcoop/nxfc_catalogue:latest
+    ports:
+      - "3011:3011"
+    depends_on:
+      - mongo
+    command: gulp test:api
+  checkout:
+    network_mode: host
+    image: newcrossfoodcoop/nxfc_base:latest-drone
+    ports:
+      - "3031:3031"
+    volumes:
+      - "./depends/checkout:/home/app/depends/checkout" 
+    command: osprey-mock-service -f depends/checkout/raml/api.raml -p 3031

@@ -105,10 +105,11 @@ exports.delivered = (req, res) => {
             order.delivery = doc;
             return order.save(); 
         })
-        .then((doc) => {
+        .then(() => {
             return Stock.update(
-                {order: doc._id, state: 'ordered' }, 
-                {$set: { state: 'delivered' }}
+                { order: order._id, state: 'ordered' }, 
+                { $set: { state: 'delivered' }},
+                { multi: true }
             );
         })
         .then(() => { return Order.populate(order, {path: 'delivery'}); })

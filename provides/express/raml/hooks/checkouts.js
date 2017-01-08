@@ -118,3 +118,8 @@ hooks.after('GET /checkouts/{checkoutId}/stock -> 200', (test,done) => {
     });
     done();
 });
+
+hooks.before('GET /checkouts/{checkoutId}/finalise -> 200', (test,done) => {
+    test.request.params.checkoutId = confirm_checkout._id;
+    done();
+});

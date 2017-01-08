@@ -11,7 +11,7 @@ var StockSchema = new Schema({
         type: String,
         enum: [
             'checkout', 'reserved', 'allocated', 'picked', 'held', 'ordered', 
-            'pickedup', 'delivered', 'cancelled'
+            'pickedup', 'delivered', 'cancelled', 'finalised'
         ],
         required: true
     },

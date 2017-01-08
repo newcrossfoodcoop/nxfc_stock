@@ -20,7 +20,7 @@ var CheckoutSchema = new Schema({
     },
     state: {
         type: String,
-        enum: ['new', 'confirmed', 'cancelled'],
+        enum: ['new', 'confirmed', 'cancelled', 'finalised'],
         default: 'new'
     },
     items: [{
