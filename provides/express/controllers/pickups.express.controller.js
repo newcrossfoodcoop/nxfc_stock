@@ -4,6 +4,7 @@ var assert = require('assert');
 var	_ = require('lodash');
 var async = require('async');
 var thenify = require('thenify');
+var util = require('util');
 
 /**
  * Module dependencies.
@@ -241,17 +242,25 @@ exports.stockByCheckout = (req, res) => {
         });
 };
 
+const valid_stock_transitions = {
+    open: ['cancelled', 'reserved'],
+    closed: ['cancelled', 'reserved'], 
+    ordered: ['cancelled', 'delivered', 'picked', 'pickedup', 'ordered'], 
+    complete: [], 
+    archived: []
+};
+
 exports.updateStock = (req, res) => {
     var stock = req.stock;
     var pickup = req.pickup;
     
-//    if (pickup.state !== 'closed') {
-//        return res.status(400).send({ message: 
-//            'Pickup.state not closed, cannot modify stock' 
-//        });
-//    }
+    // TODO: This check should really be part of the model
+    if(_.indexOf(valid_stock_transitions[pickup.state], req.body.state) < 0) {
+        return res.status(400).send({ message: util.format(
+            'Cannot set stock to "%s" when pickup is "%s"', req.body.state, pickup.state
+        )});
+    }
     
-//    stock = _.extend(stock , req.body);
     stock.state = req.body.state;
 
 	stock

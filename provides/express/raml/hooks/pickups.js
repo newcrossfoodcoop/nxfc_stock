@@ -150,6 +150,14 @@ hooks.after('GET /pickups/{pickupId}/checkouts -> 200', (test, done) => {
 hooks.before('PUT /pickups/{pickupId}/stocks/{stockId} -> 200', (test,done) => {
     test.request.params.pickupId = order_pickup._id;
     test.request.params.stockId = pickup_stock._id;
+    test.request.body.state = 'delivered';
+    done();
+});
+
+hooks.before('PUT /pickups/{pickupId}/stocks/{stockId} -> 400', (test,done) => {
+    test.request.params.pickupId = order_pickup._id;
+    test.request.params.stockId = pickup_stock._id;
+    test.request.body.state = 'reserved';
     done();
 });
 

@@ -305,7 +305,8 @@ resourceTypes:
                         "properties": {
                             "state": {
                                 "type": "string",
-                                "enum": ["reserved", "ordered", "delivered", "picked", "pickedup", "cancelled"]
+                                "enum": ["reserved", "ordered", "delivered", "picked", "pickedup", "cancelled"],
+                                "required": true
                             }
                         }
                     }
@@ -318,6 +319,17 @@ resourceTypes:
                 body:
                     application/json:
                         schema: Stock
+            400:
+                body:
+                    application/json:
+                        schema: |
+                            {
+                                "$schema": "http://json-schema.org/draft-03/schema#",
+                                "type": "object",
+                                "properties": {
+                                    "message": { "type": "string" }
+                                }
+                            }
 
 /pickups/{pickupId}/archive:
     get:
