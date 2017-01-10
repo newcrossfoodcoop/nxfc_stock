@@ -229,7 +229,7 @@ exports.stockByCheckout = (req, res) => {
     
     Stock
         .aggregate([
-            { $match: { pickup: pickup._id } },
+            { $match: { pickup: pickup._id, state: { '$ne': 'checkout' } } },
             { $sort: { created: 1 }},
             { $group: { _id: '$checkout', stock: { $push: '$$CURRENT'} }}
         ])
