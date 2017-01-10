@@ -283,15 +283,6 @@ resourceTypes:
                 body:
                     application/json:
                         schema: Pickup
-                            
-/pickups/{pickupId}/checkouts/{checkoutId}/finalise:
-    get:
-        description: "Finalise this checkout"
-        responses:
-            200:
-                body:
-                    application/json:
-                        schema: Checkout
 
 /pickups/{pickupId}/stocks/{stockId}:
     put:
@@ -330,6 +321,15 @@ resourceTypes:
                                     "message": { "type": "string" }
                                 }
                             }
+
+/pickups/{pickupId}/checkouts/{checkoutId}/finalise:
+    get:
+        description: "Finalise this checkout"
+        responses:
+            200:
+                body:
+                    application/json:
+                        schema: Checkout
 
 /pickups/{pickupId}/archive:
     get:

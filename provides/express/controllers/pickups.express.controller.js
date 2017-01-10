@@ -245,24 +245,33 @@ exports.stockByCheckout = (req, res) => {
 };
 
 const valid_stock_transitions = {
-    open: ['cancelled', 'reserved'],
-    closed: ['cancelled', 'reserved'], 
-    ordered: ['cancelled', 'delivered', 'picked', 'pickedup', 'ordered'], 
-    complete: [], 
-    archived: []
+    pickup: {
+        open: ['cancelled', 'reserved'],
+        closed: ['cancelled', 'reserved'], 
+        ordered: ['cancelled', 'delivered', 'picked', 'pickedup', 'ordered'], 
+        complete: [], 
+        archived: []
+    },
+    checkout: {
+        new: [], 
+        confirmed: ['cancelled', 'reserved', 'delivered', 'picked', 'pickedup', 'ordered'], 
+        cancelled: [],
+        finalised: []
+    }
 };
 
 exports.updateStock = (req, res) => {
     var stock = req.stock;
     var pickup = req.pickup;
+    var checkout = stock.checkout;
     
-    var valid = valid_stock_transitions[pickup.state];
+    var valid = _.intersection(valid_stock_transitions.pickup[pickup.state], valid_stock_transitions.checkout[checkout.state]);
     debug(util.format('pickup: "%s" valid stock transitions: "%s"',pickup.state, valid));
     
     // TODO: This check should really be part of the model
     if(_.indexOf(valid, req.body.state) < 0) {
         return res.status(400).send({ message: util.format(
-            'Cannot set stock to "%s" when pickup is "%s"', req.body.state, pickup.state
+            'Cannot set stock: "%s" when pickup: "%s" & checkout: "%s"', req.body.state, pickup.state, checkout.state
         )});
     }
     
@@ -270,7 +279,10 @@ exports.updateStock = (req, res) => {
 
 	stock
 	    .save()
-	    .then(() => { res.jsonp(stock); })
+	    .then(() => {
+	        stock.checkout = checkout._id;
+	        res.jsonp(stock); 
+	    })
 	    .catch((err) => {
 	        res.status(400).send({
 				message: getErrorMessage(err)
@@ -370,6 +382,7 @@ exports.pickupStockByID = function(req, res, next, id) {
     
     Stock
         .where({ _id : id, pickup: req.pickup._id })
+        .populate('checkout')
         .findOne()
         .exec()
         .then((stock) => {
