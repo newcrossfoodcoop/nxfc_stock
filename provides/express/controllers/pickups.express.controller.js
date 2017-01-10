@@ -6,6 +6,8 @@ var async = require('async');
 var thenify = require('thenify');
 var util = require('util');
 
+var debug = require('debug')('provides:express:pickups');
+
 /**
  * Module dependencies.
  */
@@ -254,8 +256,11 @@ exports.updateStock = (req, res) => {
     var stock = req.stock;
     var pickup = req.pickup;
     
+    var valid = valid_stock_transitions[pickup.state];
+    debug(util.format('pickup: "%s" valid stock transitions: "%s"',pickup.state, valid));
+    
     // TODO: This check should really be part of the model
-    if(_.indexOf(valid_stock_transitions[pickup.state], req.body.state) < 0) {
+    if(_.indexOf(valid, req.body.state) < 0) {
         return res.status(400).send({ message: util.format(
             'Cannot set stock to "%s" when pickup is "%s"', req.body.state, pickup.state
         )});
