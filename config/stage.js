@@ -1,5 +1,10 @@
 'use strict';
 
 module.exports = {
-    nodeEnvShort: 'stage'
+    nodeEnvShort: 'stage',
+    provides: {
+	    express: {
+	        logging: 'combined'
+	    }
+	}
 };

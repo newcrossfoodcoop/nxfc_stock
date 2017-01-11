@@ -251,6 +251,9 @@ exports.finalise = function(req, res) {
 	            instructions.push(instruction);
 	            
 	            switch(item.state) {
+	                case 'finalised':
+	                    //nothing to do
+	                    break;
 	                case 'cancelled':
 	                    instruction.action = 'cancel';
 	                    break;
