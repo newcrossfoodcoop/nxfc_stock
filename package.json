@@ -1,6 +1,6 @@
 {
   "name": "nxfc_stock",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "NXFC Stock Management Services",
   "private": false,
   "main": "server.js",
